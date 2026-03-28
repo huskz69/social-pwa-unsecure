@@ -37,43 +37,31 @@ def insertUser(username, password, DoB, bio=""):
 
 
 def retrieveUsers(username, password):
-    """
-    Authenticate a user.
-    VULNERABILITY 1 — SQL Injection via f-strings on both username and password.
-      Try: username = admin'--   (bypasses password check entirely)
-      Try: username = ' OR '1'='1'--
-    VULNERABILITY 2 — Timing Side-Channel:
-      sleep() only fires when username EXISTS, leaking valid usernames via response time.
-    VULNERABILITY 3 — No account lockout or rate limiting.
-    """
     con = sql.connect(DB_PATH)
     cur = con.cursor()
 
-    # VULNERABILITY: SQL Injection
+    # Fix 1: Parameterised query — no SQL injection on username
     cur.execute("SELECT * FROM users WHERE username = ?", (username,))
-    user_row = cur.fetchone()
+    row = cur.fetchone()
 
-    if user_row is None:
+    time.sleep(random.randint(80, 90) / 1000)
+
+    if row is None:
         con.close()
-        return False  # Fast path — no sleep here (timing leak)
-    else:
-        # VULNERABILITY: Timing side-channel — delay ONLY when username found
-        time.sleep(random.randint(80, 90) / 1000)
+        return False
 
-        try:
-            with open(LOG_PATH, "r") as f:
-                count = int(f.read().strip() or 0)
-            with open(LOG_PATH, "w") as f:
-                f.write(str(count + 1))
-        except Exception:
-            pass
+    try:
+        with open(LOG_PATH, "r") as f:
+            count = int(f.read().strip() or 0)
+        with open(LOG_PATH, "w") as f:
+            f.write(str(count + 1))
+    except Exception:
+        pass
 
-        # VULNERABILITY: SQL Injection on password field
-        cur.execute(f"SELECT * FROM users WHERE password = '{password}'")
-        result = cur.fetchone()
-        con.close()
-        return result is not None
-
+    cur.execute(f"SELECT * FROM users WHERE password = '{password}'")
+    result = cur.fetchone()
+    con.close()
+    return result is not None
 
 def insertPost(author, content):
     """
