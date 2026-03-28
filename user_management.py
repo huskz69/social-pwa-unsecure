@@ -37,6 +37,7 @@ def insertUser(username, password, DoB, bio=""):
 
 
 def retrieveUsers(username, password):
+    hashed = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
     con = sql.connect(DB_PATH)
     cur = con.cursor()
 
