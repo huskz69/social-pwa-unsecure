@@ -1,0 +1,206 @@
+                    
+                    
+┌──────────────────┐
+│ 22 Code Findings │
+└──────────────────┘
+                          
+  [36m[22m[24m  main.py[0m
+   ❯❯❱ python.flask.security.open-redirect.open-redirect
+          [31m[1m[24m❰❰ Blocking ❱❱[0m
+          Data from request is passed to redirect(). This is an open redirect and could be exploited. Consider
+          using 'url_for()' to generate links to known locations. If you must use a URL to unknown pages,     
+          consider using 'urlparse()' or similar and checking if the 'netloc' property is the same as your    
+          site's host name. See the references for more information.                                          
+          Details: https://sg.run/kXe2                                                                        
+                                                                                                              
+           63┆ return redirect(request.args.get("url"), code=302)
+            ⋮┆----------------------------------------
+           86┆ return redirect(request.args.get("url"), code=302)
+            ⋮┆----------------------------------------
+          106┆ return redirect(request.args.get("url"), code=302)
+            ⋮┆----------------------------------------
+          127┆ return redirect(request.args.get("url"), code=302)
+   
+    ❯❱ python.flask.security.audit.app-run-param-config.avoid_app_run_with_bad_host
+          [31m[1m[24m❰❰ Blocking ❱❱[0m
+          Running flask app with host 0.0.0.0 could expose the server publicly.
+          Details: https://sg.run/eLby                                         
+                                                                               
+          164┆ app.run(debug=True, host="0.0.0.0", port=5000)
+   
+    ❯❱ python.flask.security.audit.debug-enabled.debug-enabled
+          [31m[1m[24m❰❰ Blocking ❱❱[0m
+          Detected Flask app with debug=True. Do not deploy to production with this flag enabled as it will   
+          leak sensitive information. Instead, consider using Flask configuration variables or setting 'debug'
+          using system environment variables.                                                                 
+          Details: https://sg.run/dKrd                                                                        
+                                                                                                              
+          164┆ app.run(debug=True, host="0.0.0.0", port=5000)
+                                   
+  [36m[22m[24m  static/js/app.js[0m
+   ❯❯❱ javascript.browser.security.insecure-document-method.insecure-document-method
+          [31m[1m[24m❰❰ Blocking ❱❱[0m
+          User controlled data in methods like `innerHTML`, `outerHTML` or `document.write` is an anti-pattern
+          that can lead to XSS vulnerabilities                                                                
+          Details: https://sg.run/LwA9                                                                        
+                                                                                                              
+           93┆ msgBox.innerHTML = msg;
+   
+    ❯❱ javascript.browser.security.insufficient-postmessage-origin-validation.insufficient-postmessage-origin-
+       validation                                                                                             
+          [31m[1m[24m❰❰ Blocking ❱❱[0m
+          No validation of origin is done by the addEventListener API. It may be possible to exploit this flaw
+          to perform Cross Origin attacks such as Cross-Site Scripting(XSS).                                  
+          Details: https://sg.run/gL9x                                                                        
+                                                                                                              
+          109┆ window.addEventListener('message', function (event) {
+          110┆   // VULNERABILITY: No check on event.origin — accepts messages from any domain
+          111┆   console.log('[App] postMessage received from:', event.origin, 'data:', event.data);
+          112┆
+          113┆   if (event.data && event.data.action === 'redirect') {
+          114┆     // VULNERABILITY: Redirects to attacker-supplied URL with no validation
+          115┆     window.location.href = event.data.url;
+          116┆   }
+          117┆
+          118┆   if (event.data && event.data.action === 'setMsg') {
+             [hid 7 additional lines, adjust with --max-lines-per-finding] 
+   
+   ❯❯❱ javascript.browser.security.insecure-document-method.insecure-document-method
+          [31m[1m[24m❰❰ Blocking ❱❱[0m
+          User controlled data in methods like `innerHTML`, `outerHTML` or `document.write` is an anti-pattern
+          that can lead to XSS vulnerabilities                                                                
+          Details: https://sg.run/LwA9                                                                        
+                                                                                                              
+          122┆ msgBox.innerHTML = event.data.content;
+                                      
+  [36m[22m[24m  templates/feed.html[0m
+    ❯❱ python.django.security.django-no-csrf-token.django-no-csrf-token
+          [31m[1m[24m❰❰ Blocking ❱❱[0m
+          Manually-created forms in django templates should specify a csrf_token to prevent CSRF attacks.
+          Details: https://sg.run/N0Bp                                                                   
+                                                                                                         
+           45┆ <form action="/feed.html" method="POST">
+           46┆   <input type="hidden" name="username" value="{{ username }}" />
+           47┆   <div class="form-group" style="margin-bottom:0.6rem;">
+           48┆     <textarea
+           49┆       name="content"
+           50┆       placeholder="What's on your mind, {{ username }}? (Try posting some HTML...)"
+           51┆       required
+           52┆     ></textarea>
+           53┆   </div>
+           54┆   <div class="compose-footer">
+             [hid 4 additional lines, adjust with --max-lines-per-finding] 
+                                     
+  [36m[22m[24m  user_management.py[0m
+    ❯❱ python.lang.security.audit.formatted-sql-query.formatted-sql-query
+          [31m[1m[24m❰❰ Blocking ❱❱[0m
+          Detected possible formatted SQL query. Use parameterized queries instead.
+          Details: https://sg.run/EkWw                                             
+                                                                                   
+           53┆ cur.execute(f"SELECT * FROM users WHERE username = '{username}'")
+   
+   ❯❯❱ python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
+          [31m[1m[24m❰❰ Blocking ❱❱[0m
+          Avoiding SQL string concatenation: untrusted input concatenated with raw SQL query can result in SQL
+          Injection. In order to execute raw query safely, prepared statement should be used. SQLAlchemy      
+          provides TextualSQL to easily used prepared statement with named parameters. For complex SQL        
+          composition, use SQL Expression Language or Schema Definition Language. In most cases, SQLAlchemy   
+          ORM will be a better option.                                                                        
+          Details: https://sg.run/2b1L                                                                        
+                                                                                                              
+           53┆ cur.execute(f"SELECT * FROM users WHERE username = '{username}'")
+   
+    ❯❱ python.lang.security.audit.formatted-sql-query.formatted-sql-query
+          [31m[1m[24m❰❰ Blocking ❱❱[0m
+          Detected possible formatted SQL query. Use parameterized queries instead.
+          Details: https://sg.run/EkWw                                             
+                                                                                   
+           72┆ cur.execute(f"SELECT * FROM users WHERE password = '{password}'")
+   
+   ❯❯❱ python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
+          [31m[1m[24m❰❰ Blocking ❱❱[0m
+          Avoiding SQL string concatenation: untrusted input concatenated with raw SQL query can result in SQL
+          Injection. In order to execute raw query safely, prepared statement should be used. SQLAlchemy      
+          provides TextualSQL to easily used prepared statement with named parameters. For complex SQL        
+          composition, use SQL Expression Language or Schema Definition Language. In most cases, SQLAlchemy   
+          ORM will be a better option.                                                                        
+          Details: https://sg.run/2b1L                                                                        
+                                                                                                              
+           72┆ cur.execute(f"SELECT * FROM users WHERE password = '{password}'")
+   
+    ❯❱ python.lang.security.audit.formatted-sql-query.formatted-sql-query
+          [31m[1m[24m❰❰ Blocking ❱❱[0m
+          Detected possible formatted SQL query. Use parameterized queries instead.
+          Details: https://sg.run/EkWw                                             
+                                                                                   
+           86┆ cur.execute(f"INSERT INTO posts (author, content) VALUES ('{author}', '{content}')")
+   
+   ❯❯❱ python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
+          [31m[1m[24m❰❰ Blocking ❱❱[0m
+          Avoiding SQL string concatenation: untrusted input concatenated with raw SQL query can result in SQL
+          Injection. In order to execute raw query safely, prepared statement should be used. SQLAlchemy      
+          provides TextualSQL to easily used prepared statement with named parameters. For complex SQL        
+          composition, use SQL Expression Language or Schema Definition Language. In most cases, SQLAlchemy   
+          ORM will be a better option.                                                                        
+          Details: https://sg.run/2b1L                                                                        
+                                                                                                              
+           86┆ cur.execute(f"INSERT INTO posts (author, content) VALUES ('{author}', '{content}')")
+   
+    ❯❱ python.lang.security.audit.formatted-sql-query.formatted-sql-query
+          [31m[1m[24m❰❰ Blocking ❱❱[0m
+          Detected possible formatted SQL query. Use parameterized queries instead.
+          Details: https://sg.run/EkWw                                             
+                                                                                   
+          111┆ cur.execute(f"SELECT id, username, dateOfBirth, bio, role FROM users WHERE username =
+               '{username}'")                                                                       
+   
+   ❯❯❱ python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
+          [31m[1m[24m❰❰ Blocking ❱❱[0m
+          Avoiding SQL string concatenation: untrusted input concatenated with raw SQL query can result in SQL
+          Injection. In order to execute raw query safely, prepared statement should be used. SQLAlchemy      
+          provides TextualSQL to easily used prepared statement with named parameters. For complex SQL        
+          composition, use SQL Expression Language or Schema Definition Language. In most cases, SQLAlchemy   
+          ORM will be a better option.                                                                        
+          Details: https://sg.run/2b1L                                                                        
+                                                                                                              
+          111┆ cur.execute(f"SELECT id, username, dateOfBirth, bio, role FROM users WHERE username =
+               '{username}'")                                                                       
+   
+    ❯❱ python.lang.security.audit.formatted-sql-query.formatted-sql-query
+          [31m[1m[24m❰❰ Blocking ❱❱[0m
+          Detected possible formatted SQL query. Use parameterized queries instead.
+          Details: https://sg.run/EkWw                                             
+                                                                                   
+          125┆ cur.execute(f"SELECT * FROM messages WHERE recipient = '{username}' ORDER BY id DESC")
+   
+   ❯❯❱ python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
+          [31m[1m[24m❰❰ Blocking ❱❱[0m
+          Avoiding SQL string concatenation: untrusted input concatenated with raw SQL query can result in SQL
+          Injection. In order to execute raw query safely, prepared statement should be used. SQLAlchemy      
+          provides TextualSQL to easily used prepared statement with named parameters. For complex SQL        
+          composition, use SQL Expression Language or Schema Definition Language. In most cases, SQLAlchemy   
+          ORM will be a better option.                                                                        
+          Details: https://sg.run/2b1L                                                                        
+                                                                                                              
+          125┆ cur.execute(f"SELECT * FROM messages WHERE recipient = '{username}' ORDER BY id DESC")
+   
+    ❯❱ python.lang.security.audit.formatted-sql-query.formatted-sql-query
+          [31m[1m[24m❰❰ Blocking ❱❱[0m
+          Detected possible formatted SQL query. Use parameterized queries instead.
+          Details: https://sg.run/EkWw                                             
+                                                                                   
+          139┆ cur.execute(f"INSERT INTO messages (sender, recipient, body) VALUES ('{sender}',
+               '{recipient}', '{body}')")                                                      
+   
+   ❯❯❱ python.sqlalchemy.security.sqlalchemy-execute-raw-query.sqlalchemy-execute-raw-query
+          [31m[1m[24m❰❰ Blocking ❱❱[0m
+          Avoiding SQL string concatenation: untrusted input concatenated with raw SQL query can result in SQL
+          Injection. In order to execute raw query safely, prepared statement should be used. SQLAlchemy      
+          provides TextualSQL to easily used prepared statement with named parameters. For complex SQL        
+          composition, use SQL Expression Language or Schema Definition Language. In most cases, SQLAlchemy   
+          ORM will be a better option.                                                                        
+          Details: https://sg.run/2b1L                                                                        
+                                                                                                              
+          139┆ cur.execute(f"INSERT INTO messages (sender, recipient, body) VALUES ('{sender}',
+               '{recipient}', '{body}')")                                                      
+
