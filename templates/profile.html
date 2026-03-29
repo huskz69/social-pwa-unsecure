@@ -9,34 +9,13 @@
   <h1 style="margin-bottom:0.2rem;">{{ profile[1] }}</h1>
   <p class="text-muted" style="margin-bottom:1.5rem;">@{{ profile[1] | lower }}</p>
 
-  <!--
-    VULNERABILITY: Profile data is rendered with |safe — stored XSS in bio field.
-    A user who sets their bio to <script>...</script> at signup will have that
-    script execute on anyone who visits their profile page.
-  -->
   <p style="color:var(--text-muted); font-size:0.9rem; margin-bottom:1.5rem;">
-    {{ profile[3] | safe if profile[3] else "No bio set." }}
+    {{ profile[3] if profile[3] else "No bio set." }}
   </p>
 
   <div class="profile-stat">
-    <span class="label">User ID</span>
-    <!--
-      VULNERABILITY: Exposes internal database row ID — aids IDOR attacks.
-      Attacker can enumerate /profile?id=1, /profile?id=2 to discover all users.
-    -->
-    <span class="value">{{ profile[0] }}</span>
-  </div>
-  <div class="profile-stat">
     <span class="label">Username</span>
     <span class="value">{{ profile[1] }}</span>
-  </div>
-  <div class="profile-stat">
-    <span class="label">Date of Birth</span>
-    <!--
-      VULNERABILITY: Date of birth is exposed on a publicly accessible profile page
-      with no authentication check required to view it.
-    -->
-    <span class="value">{{ profile[2] if profile[2] else "Not set" }}</span>
   </div>
   <div class="profile-stat">
     <span class="label">Role</span>
@@ -52,12 +31,10 @@
 
   {% else %}
   <h1 class="text-accent">Profile Not Found</h1>
-  <p class="text-muted mt-2">
-    The user <strong>{{ username }}</strong> does not exist — or perhaps your SQL injection
-    didn't return a valid row?
-  </p>
+  <p class="text-muted mt-2">The user <strong>{{ username }}</strong> does not exist.</p>
   <a href="/feed.html" class="btn btn-secondary mt-2" style="width:auto; display:inline-block;">&#8592; Back to Feed</a>
   {% endif %}
 
 </div>
 {% endblock %}
+

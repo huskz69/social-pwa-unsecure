@@ -6,24 +6,14 @@
   <h1>Welcome back</h1>
   <p class="subtitle">Log in to your SocialPWA account to see the latest posts.</p>
 
-  <!--
-    VULNERABILITY: Reflected XSS
-    The 'msg' variable is rendered with the |safe filter — Jinja2 auto-escaping is disabled.
-    An attacker can craft a link like:
-      /?msg=<script>alert(document.cookie)</script>
-    and the script will execute in the victim's browser.
-  -->
   {% if msg %}
   <div class="msg-box" id="js-msg-box">{{ msg }}</div>
   {% else %}
   <div id="js-msg-box" style="display:none;"></div>
   {% endif %}
 
-  <!--
-    VULNERABILITY: No CSRF token on the login form.
-    A malicious site can submit a cross-origin form POST to this endpoint.
-  -->
   <form action="/" method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
     <div class="form-group">
       <label for="username">Username</label>
       <input
@@ -37,18 +27,13 @@
     </div>
     <div class="form-group">
       <label for="password">Password</label>
-      <!--
-        VULNERABILITY: autocomplete="current-password" lets the browser save
-        the plaintext password locally. Combined with plaintext DB storage this
-        doubles the exposure.
-      -->
       <input
         type="password"
         id="password"
         name="password"
         placeholder="Enter your password"
         required
-        autocomplete="current-password"
+        autocomplete="off"
       />
     </div>
     <button type="submit" class="btn btn-primary">Log In</button>

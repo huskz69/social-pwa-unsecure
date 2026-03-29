@@ -21,13 +21,8 @@
   <div class="feed-main">
     <div class="compose-card" style="margin-bottom:1.5rem;">
       <h2 style="margin-bottom:1rem;">&#128140; Send a Message</h2>
-      <!--
-        VULNERABILITY: No CSRF token.
-        VULNERABILITY: 'sender' is a hidden field — easily spoofed to impersonate any user.
-        VULNERABILITY: No check that 'recipient' exists in the database.
-      -->
       <form action="/messages" method="POST">
-        <input type="hidden" name="sender" value="{{ username }}" />
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
         <div class="form-group">
           <label for="recipient">To</label>
           <input
@@ -36,16 +31,12 @@
             name="recipient"
             placeholder="Recipient username"
             required
-            value="{{ recipient if recipient != username else '' }}"
+            value="{{ recipient | e if recipient != username else '' }}"
           />
         </div>
         <div class="form-group">
           <label for="body">Message</label>
-          <!--
-            VULNERABILITY: Message body is rendered with |safe in the inbox view below.
-            Stored XSS via direct message — attacker can target a specific user.
-          -->
-          <textarea id="body" name="body" placeholder="Write your message..." required></textarea>
+          <textarea id="body" name="body" placeholder="Write your message..." required maxlength="2000"></textarea>
         </div>
         <div class="compose-footer">
           <button type="submit" class="btn btn-primary btn-sm" style="width:auto;">Send</button>
@@ -54,16 +45,8 @@
     </div>
 
     <h2 style="margin-bottom:1rem;">
-      Inbox for
-      <!--
-        VULNERABILITY: Username from URL parameter rendered with |safe — reflected XSS.
-        /messages?user=<script>alert(1)</script>
-      -->
-      <span class="text-accent">{{ username}}</span>
+      Inbox for <span class="text-accent">{{ username }}</span>
     </h2>
-    <p class="text-muted mb-2" style="font-size:0.82rem;">
-      ⚠️  No authentication required to view this inbox — change the <code>?user=</code> parameter to read anyone's messages.
-    </p>
 
     {% if messages %}
       {% for msg in messages %}
@@ -74,11 +57,6 @@
           &mdash; <span>{{ msg[4] }}</span>
           {% endif %}
         </div>
-        <!--
-          VULNERABILITY: Stored XSS — message body rendered with |safe.
-          An attacker can send a message containing <script>alert(document.cookie)</script>
-          and it will execute when the recipient opens their inbox.
-        -->
         <div class="msg-body">{{ msg[3] }}</div>
       </div>
       {% endfor %}
