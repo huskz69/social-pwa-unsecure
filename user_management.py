@@ -91,7 +91,7 @@ def getUserProfile(username):
     """
     con = sql.connect(DB_PATH)
     cur = con.cursor()
-    cur.execute(f"SELECT id, username, dateOfBirth, bio, role FROM users WHERE username = '{username}'")
+    cur.execute("SELECT id, username, dateOfBirth, bio, role FROM users WHERE username = ?",(username,))    
     row = cur.fetchone()
     con.close()
     return row

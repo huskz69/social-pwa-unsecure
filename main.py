@@ -121,14 +121,12 @@ def feed():
 
 @app.route("/profile")
 def profile():
-    # VULNERABILITY: No authentication check — any visitor can read any profile
-    # VULNERABILITY: SQL Injection via 'user' parameter in getUserProfile()
-    if request.args.get("url"):
-        return redirect(request.args.get("url"), code=302)
+    if "username" not in session:
+        return redirect("/login")
+        
     username = request.args.get("user", "")
     profile_data = db.getUserProfile(username)
     return render_template("profile.html", profile=profile_data, username=username)
-
 
 # ── Direct Messages ───────────────────────────────────────────────────────────
 
