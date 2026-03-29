@@ -22,10 +22,7 @@ LOG_PATH = os.path.join(BASE_DIR, "visitor_log.txt")
 
 
 def insertUser(username, password, DoB, bio=""):
-    """
-    Insert a new user.
-    VULNERABILITY: Password stored as plaintext — no bcrypt/argon2 hashing.
-    """
+    hashed = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
     con = sql.connect(DB_PATH)
     cur = con.cursor()
     cur.execute(
@@ -37,7 +34,6 @@ def insertUser(username, password, DoB, bio=""):
 
 
 def retrieveUsers(username, password):
-    hashed = bcrypt.hashpw(password.encode(), bcrypt.gensalt())
     con = sql.connect(DB_PATH)
     cur = con.cursor()
 
@@ -59,7 +55,7 @@ def retrieveUsers(username, password):
     except Exception:
         pass
 
-    cur.execute(f"SELECT * FROM users WHERE password = '{password}'")
+    cur.execute("SELECT * FROM users WHERE password = ?",(password,))
     result = cur.fetchone()
     con.close()
     return result is not None
