@@ -49,7 +49,7 @@ init_db()
 app = Flask(__name__)
 
 # VULNERABILITY: Wildcard CORS — allows ANY origin to make credentialed requests
-CORS(app)
+CORS(app, origins=[f"http://{ALLOWED_HOST}", f"https://{ALLOWED_HOST}"])
 
 app.secret_key = os.environ.get("SECRET_KEY", secrets.token_hex(32))
 
