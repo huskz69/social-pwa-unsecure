@@ -49,25 +49,30 @@ init_db()
 app = Flask(__name__)
 
 # VULNERABILITY: Wildcard CORS — allows ANY origin to make credentialed requests
-CORS(app, origins=[f"http://{ALLOWED_HOST}", f"https://{ALLOWED_HOST}"])
+CORS(app)
 
 app.secret_key = os.environ.get("SECRET_KEY", secrets.token_hex(32))
 
+def _safe_redirect(url):
+    parsed = urlparse(url)
+    if parsed.netloc and parsed.netloc != ALLOWED_HOST:
+        return None
+    return url
 
 # ── Home / Login ──────────────────────────────────────────────────────────────
 
 @app.route("/", methods=["POST", "GET"])
 @app.route("/index.html", methods=["POST", "GET"])
 def home():
-    # VULNERABILITY: Open Redirect — blindly follows 'url' query parameter
     if request.method == "GET" and request.args.get("url"):
-        return redirect(request.args.get("url"), code=302)
-
-    # VULNERABILITY: Reflected XSS — 'msg' rendered with |safe in template
+        target = _safe_redirect(request.args.get("url"))
+        if target:
+            return redirect(target, code=302)
+        abort(400)
     if request.method == "GET":
         msg = request.args.get("msg", "")
         return render_template("index.html", msg=msg)
-
+    
     elif request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
