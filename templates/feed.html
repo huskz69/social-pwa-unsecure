@@ -4,7 +4,6 @@
 {% block content %}
 <div class="feed-wrapper">
 
-  <!-- ── Sidebar ──────────────────────────────────────────────────────────── -->
   <aside class="feed-sidebar">
     <div class="profile-card">
       <div class="avatar">{{ username[0] | upper if username else '?' }}</div>
@@ -25,7 +24,6 @@
     </div>
   </aside>
 
-  <!-- ── Feed Main ─────────────────────────────────────────────────────────── -->
   <div class="feed-main">
 
     {% if msg %}
@@ -34,31 +32,24 @@
     <div id="js-msg-box" style="display:none;"></div>
     {% endif %}
 
-    <!-- Compose Box -->
-    <!--
-      VULNERABILITY 1: No CSRF token — any site can POST to /feed.html on behalf of logged-in user.
-      VULNERABILITY 2: IDOR — 'username' is a hidden field the user controls.
-                        Changing it lets anyone post as 'admin' or any other user.
-      VULNERABILITY 3: No content length limit enforced server-side.
-    -->
     <div class="compose-card">
       <form action="/feed.html" method="POST">
-        <input type="hidden" name="username" value="{{ username }}" />
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
         <div class="form-group" style="margin-bottom:0.6rem;">
           <textarea
             name="content"
-            placeholder="What's on your mind, {{ username }}? (Try posting some HTML...)"
+            placeholder="What's on your mind, {{ username }}?"
             required
+            maxlength="1000"
           ></textarea>
         </div>
         <div class="compose-footer">
-          <span class="text-muted" style="font-size:0.8rem;">No content filtering applied</span>
+          <span class="text-muted" style="font-size:0.8rem;">Max 1000 characters</span>
           <button type="submit" class="btn btn-primary btn-sm" style="width:auto;">Post</button>
         </div>
       </form>
     </div>
 
-    <!-- Posts -->
     {% if posts %}
       {% for post in posts %}
       <div class="post-card">
@@ -74,14 +65,7 @@
           <div class="post-timestamp">{{ post[3] }}</div>
           {% endif %}
         </div>
-        <!--
-          VULNERABILITY: Stored XSS
-          Post content is rendered with |safe — auto-escaping is disabled.
-          Any user can post <script>alert(document.cookie)</script> and it will
-          execute in the browser of EVERY user who loads the feed page.
-          The payload is permanently stored in the database.
-        -->
-        <div class="post-content">{{ post[2]}}</div>
+        <div class="post-content">{{ post[2] }}</div>
       </div>
       {% endfor %}
     {% else %}
