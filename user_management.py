@@ -84,11 +84,7 @@ def getPosts():
 
 
 def getUserProfile(username):
-    """
-    Get a user profile row.
-    VULNERABILITY: SQL Injection via f-string — try /profile?user=admin'--
-    VULNERABILITY: No authentication check — any visitor can view any profile.
-    """
+
     con = sql.connect(DB_PATH)
     cur = con.cursor()
     cur.execute("SELECT id, username, dateOfBirth, bio, role FROM users WHERE username = ?",(username,))    
