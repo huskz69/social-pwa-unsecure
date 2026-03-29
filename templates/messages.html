@@ -59,7 +59,7 @@
         VULNERABILITY: Username from URL parameter rendered with |safe — reflected XSS.
         /messages?user=<script>alert(1)</script>
       -->
-      <span class="text-accent">{{ username | safe }}</span>
+      <span class="text-accent">{{ username}}</span>
     </h2>
     <p class="text-muted mb-2" style="font-size:0.82rem;">
       ⚠️  No authentication required to view this inbox — change the <code>?user=</code> parameter to read anyone's messages.
@@ -79,7 +79,7 @@
           An attacker can send a message containing <script>alert(document.cookie)</script>
           and it will execute when the recipient opens their inbox.
         -->
-        <div class="msg-body">{{ msg[3] | safe }}</div>
+        <div class="msg-body">{{ msg[3] }}</div>
       </div>
       {% endfor %}
     {% else %}

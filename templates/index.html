@@ -14,7 +14,7 @@
     and the script will execute in the victim's browser.
   -->
   {% if msg %}
-  <div class="msg-box" id="js-msg-box">{{ msg | safe }}</div>
+  <div class="msg-box" id="js-msg-box">{{ msg }}</div>
   {% else %}
   <div id="js-msg-box" style="display:none;"></div>
   {% endif %}
