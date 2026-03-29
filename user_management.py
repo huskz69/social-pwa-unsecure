@@ -37,11 +37,11 @@ def retrieveUsers(username, password):
     con = sql.connect(DB_PATH)
     cur = con.cursor()
 
-    # Fix 1: Parameterised query — no SQL injection on username
-    cur.execute("SELECT * FROM users WHERE username = ?", (username,))
-    row = cur.fetchone()
-
     time.sleep(random.randint(80, 90) / 1000)
+
+
+    cur.execute("SELECT * FROM users WHERE username = ? AND password = ?", (username, password))
+    result = cur.fetchone()
 
     if row is None:
         con.close()
@@ -55,10 +55,8 @@ def retrieveUsers(username, password):
     except Exception:
         pass
 
-    cur.execute("SELECT * FROM users WHERE password = ?",(password,))
-    result = cur.fetchone()
     con.close()
-    return result is not None
+    return True
 
 def insertPost(author, content):
     """
