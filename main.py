@@ -138,9 +138,11 @@ def profile():
 
 @app.route("/messages", methods=["POST", "GET"])
 def messages():
-    # VULNERABILITY: No authentication — change ?user= to read anyone's inbox
+    if "username" not in session:
+        return redirect("/")
+
+    username = session["username"]
     if request.method == "POST":
-        sender    = request.form.get("sender", "Anonymous")
         recipient = request.form.get("recipient", "")
         body      = request.form.get("body", "")
         db.sendMessage(sender, recipient, body)
@@ -154,6 +156,11 @@ def messages():
 
 # ── Success Page ──────────────────────────────────────────────────────────────
 
+@app.route("/logout")
+def logout():
+    session.clear()
+    return redirect("/")
+
 @app.route("/success.html")
 def success():
     msg = request.args.get("msg", "Your action was completed successfully.")
@@ -165,4 +172,5 @@ def success():
 if __name__ == "__main__":
     app.config["TEMPLATES_AUTO_RELOAD"] = True
     app.config["SEND_FILE_MAX_AGE_DEFAULT"] = 0
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    debug_mode = os.environ.get("FLASK_DEBUG", "false").lower() == "true"
+    app.run(debug=debug_mode, host="127.0.0.1", port=5000)
